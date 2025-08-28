@@ -1,218 +1,156 @@
-import React, { useState } from "react";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Noel Research Consulting</title>
+  <meta name="description" content="Noel Research Consulting provides remote clinical research services: source document creation, IRB submissions, budget/CTA negotiations, SOP development, and recruitment strategy—helping physician practices launch compliant trials without overhead.">
+  <!-- Tailwind (CDN) -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-white text-gray-900">
 
-// NOTE: This file is now valid React/TSX. The previous version contained a full
-// HTML document (<!DOCTYPE html> ...), which caused build tools to parse it as
-// index.tsx and throw: "SyntaxError: Unexpected token (1:0)". In React, only
-// the component markup should be returned; the <html>/<head>/<body> wrapper
-// lives in your framework's index.html, not inside a component.
-
-// --- Simple runtime dev checks (lightweight "test cases") ---
-// These ensure our data arrays have expected content. They run in the browser
-// and help catch accidental edits.
-const SERVICES = [
-  {
-    title: "IRB Submissions & Regulatory",
-    bullets: [
-      "Central/local IRB applications & responses",
-      "ICF versions, 1572s, CVs, lab docs, training",
-      "Submission tracking and document control",
-    ],
-    price: "Typical: $1,500–$3,000 per submission",
-  },
-  {
-    title: "Source Document Creation",
-    bullets: [
-      "Visit-specific source templates & logs",
-      "Checklists, delegation & training logs",
-      "Word/PDF deliverables or eReg formats",
-    ],
-    price: "Typical: $500–$1,500 per study",
-  },
-  {
-    title: "Budget & CTA Negotiations",
-    bullets: [
-      "Budget review & overhead alignment",
-      "Screen-fail, re-screen, and procedure coverage",
-      "Payment terms & holdbacks",
-    ],
-    price: "Typical: $1,000–$2,000 (or 3–5% of budget)",
-  },
-  {
-    title: "SOP Development",
-    bullets: [
-      "10–12 core GCP-aligned SOPs",
-      "Training slides & implementation guide",
-      "Version control & QC plan",
-    ],
-    price: "Typical: $2,500–$5,000 bundle",
-  },
-];
-
-const ADD_ONS = [
-  {
-    title: "Recruitment Strategy (Add-On)",
-    description:
-      "Pre-screen trackers, referral workflows, outreach templates, and KPI dashboard starter.",
-    price: "Typical: $500–$1,500",
-  },
-];
-
-if (typeof window !== "undefined") {
-  console.assert(SERVICES.length >= 4, "Expected at least 4 core remote services");
-  console.assert(
-    SERVICES.every((s) => s.title && s.bullets?.length >= 3),
-    "Each service should have a title and >=3 bullets"
-  );
-}
-
-export default function NoelResearchConsulting() {
-  const [sent, setSent] = useState(false);
-
-  return (
-    <div className="min-h-screen bg-white text-gray-900">
-      {/* Header */}
-      <header className="sticky top-0 bg-white/90 backdrop-blur border-b">
-        <div className="max-w-6xl mx-auto flex items-center justify-between p-4">
-          <div className="font-bold text-lg">Noel Research Consulting</div>
-          <nav className="space-x-4 hidden md:block text-sm">
-            <a href="#services" className="hover:underline">
-              Services
-            </a>
-            <a href="#process" className="hover:underline">
-              Process
-            </a>
-            <a href="#contact" className="hover:underline">
-              Contact
-            </a>
-          </nav>
-        </div>
-      </header>
-
-      {/* Hero */}
-      <section className="bg-gray-50 py-16">
-        <div className="max-w-6xl mx-auto px-4 grid md:grid-cols-2 gap-10 items-center">
-          <div>
-            <h1 className="text-4xl font-bold">
-              Remote clinical research services for physician practices.
-            </h1>
-            <p className="mt-4 text-lg text-gray-700">
-              We specialize in IRB submissions, source document creation, SOP
-              development, and budget/CTA negotiations—all performed remotely to
-              help your site launch trials quickly and compliantly.
-            </p>
-            <div className="mt-6 space-x-4">
-              <a href="#contact" className="px-5 py-3 bg-blue-600 text-white rounded-lg">
-                Book a discovery call
-              </a>
-              <a href="#services" className="px-5 py-3 border rounded-lg">
-                See services
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Services (remote only) */}
-      <section id="services" className="py-16 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-2xl font-semibold">Remote services & starter packages</h2>
-          <p className="mt-2 text-gray-700">
-            All services delivered fully remote. Flat-fee or hourly ($75–$100/hr).
-          </p>
-
-          <div className="mt-8 grid md:grid-cols-2 gap-6">
-            {SERVICES.map((s) => (
-              <div key={s.title} className="border rounded-lg p-6 bg-white">
-                <h3 className="font-bold mb-2">{s.title}</h3>
-                <ul className="text-sm space-y-2 list-disc ml-5">
-                  {s.bullets.map((b) => (
-                    <li key={b}>{b}</li>
-                  ))}
-                </ul>
-                <p className="text-gray-500 mt-2">{s.price}</p>
-              </div>
-            ))}
-          </div>
-
-          {ADD_ONS.map((a) => (
-            <div key={a.title} className="mt-8 border rounded-lg p-6 bg-white">
-              <h3 className="font-bold mb-2">{a.title}</h3>
-              <p className="text-sm text-gray-700">{a.description}</p>
-              <p className="text-gray-500 mt-2">{a.price}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Process */}
-      <section id="process" className="py-16">
-        <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-2xl font-semibold">How we work</h2>
-          <ol className="mt-6 grid md:grid-cols-4 gap-6 text-sm">
-            {[
-              {
-                t: "Discovery",
-                d: "30-min call to map goals, timelines, and constraints.",
-              },
-              {
-                t: "Scope & Budget",
-                d: "Fixed-fee proposal with clear deliverables and timelines.",
-              },
-              {
-                t: "Build & Implement",
-                d: "Preparation of IRB submissions, source, SOPs, and budget negotiations as needed.",
-              },
-              {
-                t: "Handoff & Support",
-                d: "Training, QC, and optional retainer for ongoing trials.",
-              },
-            ].map((s, i) => (
-              <li key={s.t} className="border p-4 rounded-lg">
-                <div className="text-xs text-gray-500">Step {i + 1}</div>
-                <div className="font-bold">{s.t}</div>
-                <p className="mt-1 text-gray-700">{s.d}</p>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      {/* Contact */}
-      <section id="contact" className="py-20">
-        <div className="max-w-3xl mx-auto px-4">
-          <h2 className="text-2xl font-semibold">Start your first (or next) study</h2>
-          <div className="mt-6 grid gap-4 border rounded-xl p-6">
-            {sent ? (
-              <div className="text-center">
-                <h3 className="text-lg font-semibold">Thanks! We'll be in touch shortly.</h3>
-                <p className="text-sm text-gray-600 mt-2">
-                  Security note: Do not include PHI. We provide HIPAA-aware services and can
-                  execute a BAA when appropriate.
-                </p>
-              </div>
-            ) : (
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  setSent(true);
-                }}
-                className="grid gap-4"
-              >
-                <input className="border p-3 rounded" type="text" placeholder="Full name" required />
-                <input className="border p-3 rounded" type="email" placeholder="Work email" required />
-                <input className="border p-3 rounded" type="text" placeholder="Organization / clinic" />
-                <textarea className="border p-3 rounded" rows={5} placeholder="What support do you need?"></textarea>
-                <button className="px-5 py-3 bg-blue-600 text-white rounded-lg">Send message</button>
-              </form>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="py-6 border-t text-center text-sm text-gray-600">
-        © {new Date().getFullYear()} Noel Research Consulting. All rights reserved.
-      </footer>
+  <!-- Header -->
+  <header class="sticky top-0 bg-white shadow">
+    <div class="max-w-6xl mx-auto flex items-center justify-between p-4">
+      <div class="font-bold text-lg">Noel Research Consulting</div>
+      <nav class="space-x-4 hidden md:block">
+        <a href="#services" class="hover:underline">Services</a>
+        <a href="#process" class="hover:underline">Process</a>
+        <a href="#contact" class="hover:underline">Contact</a>
+      </nav>
     </div>
-  );
-}
+  </header>
+
+  <!-- Hero -->
+  <section class="bg-gray-50 py-16">
+    <div class="max-w-6xl mx-auto px-4 grid md:grid-cols-2 gap-10 items-center">
+      <div>
+        <h1 class="text-4xl font-bold">Remote clinical research services for physician practices.</h1>
+        <p class="mt-4 text-lg text-gray-700">
+          We specialize in IRB submissions, source document creation, SOP development, and budget/CTA negotiations—
+          all performed remotely to help your site launch trials quickly and compliantly.
+        </p>
+        <div class="mt-6 space-x-4">
+          <a href="#contact" class="px-5 py-3 bg-blue-600 text-white rounded-lg">Book a discovery call</a>
+          <a href="#services" class="px-5 py-3 border rounded-lg">See services</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services (remote only) -->
+  <section id="services" class="py-16 bg-gray-50">
+    <div class="max-w-6xl mx-auto px-4">
+      <h2 class="text-2xl font-semibold">Remote services & starter packages</h2>
+      <p class="mt-2 text-gray-700">All services delivered fully remote. Flat-fee or hourly ($75–$100/hr).</p>
+
+      <div class="mt-8 grid md:grid-cols-2 gap-6">
+        <div class="border rounded-lg p-6 bg-white">
+          <h3 class="font-bold mb-2">IRB Submissions & Regulatory</h3>
+          <ul class="text-sm space-y-2 list-disc ml-5">
+            <li>Central/local IRB applications & responses</li>
+            <li>ICF versions, 1572s, CVs, lab docs, training</li>
+            <li>Submission tracking and document control</li>
+          </ul>
+          <p class="text-gray-500 mt-2">Typical: $1,500–$3,000 per submission</p>
+        </div>
+
+        <div class="border rounded-lg p-6 bg-white">
+          <h3 class="font-bold mb-2">Source Document Creation</h3>
+          <ul class="text-sm space-y-2 list-disc ml-5">
+            <li>Visit-specific source templates & logs</li>
+            <li>Checklists, delegation & training logs</li>
+            <li>Word/PDF deliverables or eReg formats</li>
+          </ul>
+          <p class="text-gray-500 mt-2">Typical: $500–$1,500 per study</p>
+        </div>
+
+        <div class="border rounded-lg p-6 bg-white">
+          <h3 class="font-bold mb-2">Budget & CTA Negotiations</h3>
+          <ul class="text-sm space-y-2 list-disc ml-5">
+            <li>Budget review & overhead alignment</li>
+            <li>Screen-fail, re-screen, procedure coverage</li>
+            <li>Payment terms & holdbacks</li>
+          </ul>
+          <p class="text-gray-500 mt-2">Typical: $1,000–$2,000 (or 3–5% of budget)</p>
+        </div>
+
+        <div class="border rounded-lg p-6 bg-white">
+          <h3 class="font-bold mb-2">SOP Development</h3>
+          <ul class="text-sm space-y-2 list-disc ml-5">
+            <li>10–12 core GCP-aligned SOPs</li>
+            <li>Training slides & implementation guide</li>
+            <li>Version control & QC plan</li>
+          </ul>
+          <p class="text-gray-500 mt-2">Typical: $2,500–$5,000 bundle</p>
+        </div>
+      </div>
+
+      <div class="mt-8 border rounded-lg p-6 bg-white">
+        <h3 class="font-bold mb-2">Recruitment Strategy (Add-On)</h3>
+        <p class="text-sm text-gray-700">Pre-screen trackers, referral workflows, outreach templates, and KPI dashboard starter.</p>
+        <p class="text-gray-500 mt-2">Typical: $500–$1,500</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Process -->
+  <section id="process" class="py-16">
+    <div class="max-w-6xl mx-auto px-4">
+      <h2 class="text-2xl font-semibold">How we work</h2>
+      <ol class="mt-6 grid md:grid-cols-4 gap-6 text-sm">
+        <li class="border p-4 rounded-lg">
+          <div class="text-xs text-gray-500">Step 1</div>
+          <div class="font-bold">Discovery</div>
+          <p class="mt-1 text-gray-700">30-min call to map goals, timelines, and constraints.</p>
+        </li>
+        <li class="border p-4 rounded-lg">
+          <div class="text-xs text-gray-500">Step 2</div>
+          <div class="font-bold">Scope & Budget</div>
+          <p class="mt-1 text-gray-700">Fixed-fee proposal with clear deliverables and timelines.</p>
+        </li>
+        <li class="border p-4 rounded-lg">
+          <div class="text-xs text-gray-500">Step 3</div>
+          <div class="font-bold">Build & Implement</div>
+          <p class="mt-1 text-gray-700">IRB submissions, source, SOPs, and budget negotiations as needed.</p>
+        </li>
+        <li class="border p-4 rounded-lg">
+          <div class="text-xs text-gray-500">Step 4</div>
+          <div class="font-bold">Handoff & Support</div>
+          <p class="mt-1 text-gray-700">Training, QC, and optional retainer for ongoing trials.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- Contact (static) -->
+  <section id="contact" class="py-20">
+    <div class="max-w-3xl mx-auto px-4">
+      <h2 class="text-2xl font-semibold">Start your first (or next) study</h2>
+
+      <!-- To make this form send email without a server, create a free Formspree endpoint and replace the action URL below -->
+      <form action="https://formspree.io/f/yourEndpoint" method="POST" class="mt-6 grid gap-4 border rounded-xl p-6">
+        <input class="border p-3 rounded" name="name" type="text" placeholder="Full name" required />
+        <input class="border p-3 rounded" name="email" type="email" placeholder="Work email" required />
+        <input class="border p-3 rounded" name="org" type="text" placeholder="Organization / clinic" />
+        <textarea class="border p-3 rounded" name="message" rows="5" placeholder="What support do you need?"></textarea>
+        <button class="px-5 py-3 bg-blue-600 text-white rounded-lg">Send message</button>
+      </form>
+
+      <p class="mt-4 text-sm text-gray-600">
+        Security note: Do not include PHI. We provide HIPAA-aware services and can execute a BAA when appropriate.
+      </p>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-6 border-t text-center text-sm text-gray-600">
+    © <span id="year"></span> Noel Research Consulting. All rights reserved.
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
