@@ -1,0 +1,515 @@
+import React, { useMemo, useState } from "react";
+import {
+  AlignmentType,
+  Document,
+  HeadingLevel,
+  Packer,
+  Paragraph,
+  Table,
+  TableCell,
+  TableRow,
+  TextRun,
+  WidthType,
+} from "docx";
+
+// ────────────────────────────────────────────────────────────────────────────────
+// Research Source Docs – React (DOCX export)
+// Single template: **Custom Visit (Modules)** only.
+// Reusable modules (Vitals, ECG, Labs, PE) + 8 new modules + Ad‑hoc builder.
+// ALCOA++ and investigator-only sign-offs embedded. No subscriptions/trials.
+// ────────────────────────────────────────────────────────────────────────────────
+
+// Contact config — update these to your real values
+const CONTACT_EMAIL = "hello@researchsourcedocs.com"; // change to your email
+const CALENDLY_URL = "https://calendly.com/your-handle/intro-call"; // change to your Calendly link
+
+const BRAND = {
+  name: "Research Source Docs",
+  disclaimer:
+    "Complete in real time. Correct with single line, date/initial. Use 24-hr time. Do not record PHI beyond protocol requirements.",
+  contactHref: `mailto:${CONTACT_EMAIL}?subject=Custom%20Source%20Docs%20Request`,
+};
+
+const L = (text: string) => new TextRun({ text, bold: true });
+
+export function formatResearchDate(dateStr: string): string {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  const day = String(d.getDate()).padStart(2, "0");
+  const monthNames = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+  const mon = monthNames[d.getMonth()];
+  const year = d.getFullYear();
+  return `${day}-${mon}-${year}`;
+}
+
+// ────────────────────────────────────────────────────────────────────────────────
+// ALCOA++ reminders block
+function AlcoaBlock() {
+  return [
+    new Paragraph({ text: "ALCOA++: Attributable, Legible, Contemporaneous, Original, Accurate, Complete, Consistent, Enduring, Available, Traceable.", spacing: { after: 120 } }),
+    new Paragraph({ text: "Corrections: single line through, date, initials. Record data immediately after procedure. Investigator-only assessments must be signed by Investigator.", spacing: { after: 240 } }),
+  ];
+}
+
+// ────────────────────────────────────────────────────────────────────────────────
+// Header Table (Time & Staff removed per request)
+function HeaderTable(fields: Record<string, string>) {
+  return new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    rows: [
+      new TableRow({
+        children: [
+          new TableCell({
+            children: [
+              new Paragraph({ children: [L("Protocol No: "), new TextRun(fields.protocol || " ")] }),
+              new Paragraph({ children: [L("Protocol Title: "), new TextRun(fields.title || " ")] }),
+              new Paragraph({ children: [L("Site No: "), new TextRun(fields.site || " "), new TextRun("    "), L("PI: "), new TextRun(fields.pi || " ")] }),
+            ],
+          }),
+          new TableCell({
+            children: [
+              new Paragraph({ children: [L("Subject ID: "), new TextRun(fields.subjectId || " "), new TextRun("    "), L("Initials: "), new TextRun(fields.initials || " ")] }),
+              new Paragraph({ children: [L("Visit: "), new TextRun(fields.visit || " ")] }),
+              new Paragraph({ children: [L("Visit Date (DD-MMM-YYYY): "), new TextRun(formatResearchDate(fields.visitDate))] }),
+            ],
+          }),
+        ],
+      }),
+    ],
+  });
+}
+
+function Para(text: string, opts: Partial<ConstructorParameters<typeof Paragraph>[0]> = {}) {
+  return new Paragraph({ text, ...opts });
+}
+function Bullet(text: string) { return new Paragraph({ text, bullet: { level: 0 } }); }
+function SectionHeading(text: string) { return new Paragraph({ text, heading: HeadingLevel.HEADING_2, spacing: { before: 200, after: 120 } }); }
+
+// ────────────────────────────────────────────────────────────────────────────────
+// Reusable MODULES (DOCX)
+
+function buildVitalsModule() {
+  const p: Paragraph[] = [];
+  p.push(SectionHeading("Vitals"));
+  p.push(Para("Pre-measurement: subject seated ≥5 min; use same arm throughout; record 24-hr time."));
+  p.push(Para("Position: __________    Arm: ☐ Left  ☐ Right    Time obtained (24-hr): ____:____"));
+  p.push(Para("BP: ____ / ____ mmHg    HR: ____ bpm    RR: ____ /min"));
+  p.push(Para("Temperature: ____  (☐ C  ☐ F)   Location: __________________"));
+  p.push(Para("Collected by: __________________   Date (DD-MMM-YYYY): ____-___-____"));
+  p.push(Para("Investigator assessment: ☐ Normal  ☐ Abnormal (NCS)  ☐ Abnormal (CS)"));
+  p.push(Para("Investigator Signature: __________________   Date: ____-___-____"));
+  p.push(Para("Repeat Vitals (if indicated): ☐ Performed  ☐ NA"));
+  p.push(Para("BP: ____ / ____ mmHg    HR: ____ bpm    RR: ____ /min"));
+  p.push(Para("Temperature: ____  (☐ C  ☐ F)   Time: ____:____"));
+  return p;
+}
+
+function buildEcgModule() {
+  const p: Paragraph[] = [];
+  p.push(SectionHeading("12-Lead ECG"));
+  p.push(Para("Preconditions: supine ≥5 min; collect prior to bloods when feasible."));
+  p.push(Para("Date (DD-MMM-YYYY): ____-___-____    Time supine start (24-hr): ____:____"));
+  p.push(Para("Time collected (24-hr): ____:____    Collected by: __________________    Date: ____-___-____"));
+  p.push(Para("Investigator assessment: ☐ Normal  ☐ Abnormal (NCS)  ☐ Abnormal (CS)"));
+  p.push(Para("Investigator Signature: __________________    Date: ____-___-____"));
+  p.push(Para("Repeat ECG (if indicated): ☐ Performed  ☐ NA"));
+  p.push(Para("Repeat – Time collected (24-hr): ____:____    Notes: __________________"));
+  return p;
+}
+
+function buildLabsModule(opts: { includePK: boolean; includeBiomarker: boolean }) {
+  const rows: string[] = ["Chemistry", "Hematology", "Urinalysis"];
+  if (opts.includePK) rows.splice(2, 0, "PK Sample");
+  if (opts.includeBiomarker) rows.splice(rows.length, 0, "Biomarker");
+
+  const tableRows = rows.map((r) =>
+    new TableRow({
+      children: [
+        new TableCell({ children: [Para(r)] }),
+        new TableCell({ children: [Para("☐ Yes  ☐ No  ☐ N/A")] }),
+        new TableCell({ children: [Para("____-___-____")] }),
+        new TableCell({ children: [Para("____:____")] }),
+      ],
+    })
+  );
+
+  return [
+    SectionHeading("Laboratory Collection"),
+    new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      rows: [
+        new TableRow({
+          children: [
+            new TableCell({ children: [Para("Sample/Test")]}),
+            new TableCell({ children: [Para("Collected?")]}),
+            new TableCell({ children: [Para("Date (DD-MMM-YYYY)")]}),
+            new TableCell({ children: [Para("Time (24-hr)")]}),
+          ],
+        }),
+        ...tableRows,
+      ],
+    }),
+    Para("Clinically significant lab results should be assessed for AE reporting; document separately as required."),
+    Para("Investigator significance assessment (if required by protocol): ☐ Clinically Significant  ☐ Not Clinically Significant"),
+    Para("Investigator Signature: __________________   Date: ____-___-____"),
+  ];
+}
+
+function buildPhysicalExamModule() {
+  const p: Paragraph[] = [];
+  p.push(SectionHeading("Physical Exam"));
+  p.push(Para("Systems: General / HEENT / Cardiac / Respiratory / Abdomen / Neuro / Skin"));
+  p.push(Para("Findings (attach additional pages if needed):"));
+  p.push(Para("_______________________________________________________________________"));
+  p.push(Para("_______________________________________________________________________"));
+  p.push(Para("Investigator assessment: ☐ Normal  ☐ Abnormal (NCS)  ☐ Abnormal (CS)"));
+  p.push(Para("Investigator Signature: __________________   Date: ____-___-____"));
+  return p;
+}
+
+// ── NEW MODULES ────────────────────────────────────────────────────────────────
+function buildAEModule() {
+  const p: Paragraph[] = [];
+  p.push(SectionHeading("Adverse Events / Serious Adverse Events"));
+  p.push(Para("Onset Date: ____-___-____    Time (24-hr): ____:____   End Date: ____-___-____    Time: ____:____"));
+  p.push(Para("Description: ____________________________________________________________"));
+  p.push(Para("Severity: ☐ Mild  ☐ Moderate  ☐ Severe"));
+  p.push(Para("Relationship to IP: ☐ Not Related  ☐ Possible  ☐ Probable  ☐ Related"));
+  p.push(Para("Action Taken: ☐ None  ☐ Dose Change  ☐ Interrupted  ☐ Concomitant Tx  ☐ Other __________"));
+  p.push(Para("Outcome: ☐ Ongoing  ☐ Resolved  ☐ Resolved w/ Sequelae  ☐ Fatal"));
+  p.push(Para("Investigator Signature: __________________   Date: ____-___-____"));
+  return p;
+}
+
+function buildConMedsModule() {
+  const p: Paragraph[] = [];
+  p.push(SectionHeading("Concomitant Medications"));
+  p.push(Para("Use one line per medication:"));
+  p.push(Bullet("Start Date | Stop Date (or Ongoing ☐) | Medication | Indication | Dose/Route/Frequency | Notes"));
+  return p;
+}
+
+function buildConsentModule() {
+  const p: Paragraph[] = [];
+  p.push(SectionHeading("Informed Consent"));
+  p.push(Para("ICF Version/Date: __________    IRB Approval Date: ____-___-____"));
+  p.push(Para("Consent obtained on (DD-MMM-YYYY) ____-___-____ at (24-hr) ____:____"));
+  p.push(Para("Participant/LAR Signature: __________________   Date: ____-___-____"));
+  p.push(Para("Person Obtaining Consent (Print & Sign): __________________   Date: ____-___-____"));
+  p.push(Para("Witness (if required): __________________   Date: ____-___-____"));
+  p.push(Para("Notes: teach-back performed; questions answered; no coercion/undue influence."));
+  return p;
+}
+
+function buildAccountabilityModule() {
+  const p: Paragraph[] = [];
+  p.push(SectionHeading("Study Drug / Device Accountability"));
+  p.push(Bullet("Date Dispensed | Kit/Lot/Batch | Qty Dispensed | Date Returned | Qty Returned | Balance | Notes | Staff Initials"));
+  p.push(Para("Investigator Oversight: __________________   Date: ____-___-____"));
+  return p;
+}
+
+function buildRandomizationModule() {
+  const p: Paragraph[] = [];
+  p.push(SectionHeading("Randomization / Enrollment"));
+  p.push(Para("Date (DD-MMM-YYYY): ____-___-____    Time (24-hr): ____:____    System: __________"));
+  p.push(Para("Subject ID assigned: __________   Stratification factors (if applicable): __________"));
+  p.push(Para("Confirmation sent to sponsor/CRO on: ____-___-____  by: __________"));
+  return p;
+}
+
+function buildQuestionnaireModule() {
+  const p: Paragraph[] = [];
+  p.push(SectionHeading("Questionnaire / Scale"));
+  p.push(Para("Name of Instrument: __________________   Date: ____-___-____"));
+  p.push(Para("Completed by: ☐ Subject  ☐ Caregiver  ☐ Clinician"));
+  p.push(Para("Total Score: ____   Notes: __________________"));
+  p.push(Para("Staff Initials: ______"));
+  return p;
+}
+
+function buildImagingModule() {
+  const p: Paragraph[] = [];
+  p.push(SectionHeading("Imaging / Procedure"));
+  p.push(Para("Type: ☐ MRI  ☐ CT  ☐ X-ray  ☐ Ultrasound  ☐ Other ______"));
+  p.push(Para("Date: ____-___-____    Time (24-hr): ____:____    Location/Modality: __________"));
+  p.push(Para("Findings Summary: ________________________________________________"));
+  p.push(Para("Investigator assessment: ☐ Normal  ☐ Abnormal (NCS)  ☐ Abnormal (CS)"));
+  p.push(Para("Investigator Signature: __________________   Date: ____-___-____"));
+  return p;
+}
+
+function buildUnscheduledModule() {
+  const p: Paragraph[] = [];
+  p.push(SectionHeading("Unscheduled Visit / Event"));
+  p.push(Para("Trigger: ☐ AE  ☐ Deviation  ☐ Subject concern  ☐ Other ______"));
+  p.push(Para("Date: ____-___-____    Time (24-hr): ____:____"));
+  p.push(Para("Procedures performed: _____________________________________________"));
+  p.push(Para("Notes: ____________________________________________________________"));
+  p.push(Para("Investigator Review & Signature: __________________   Date: ____-___-____"));
+  return p;
+}
+
+// ────────────────────────────────────────────────────────────────────────────────
+// Build Document (single template: custom)
+function buildDoc(fields: Record<string, string>, mods: ModsState) {
+  const children: Paragraph[] = [
+    new Paragraph({ text: BRAND.name, heading: HeadingLevel.HEADING_1, alignment: AlignmentType.LEFT }),
+    new Paragraph({ text: "Source Version: v1.0", spacing: { after: 100 } }),
+    HeaderTable(fields),
+    ...AlcoaBlock(),
+  ];
+
+  if (mods.includeVitals) children.push(...buildVitalsModule());
+  if (mods.includeECG) children.push(...buildEcgModule());
+  if (mods.includeLabs) children.push(...buildLabsModule({ includePK: mods.includePK, includeBiomarker: mods.includeBiomarker }));
+  if (mods.includePE) children.push(...buildPhysicalExamModule());
+
+  if (mods.includeAE) children.push(...buildAEModule());
+  if (mods.includeConMeds) children.push(...buildConMedsModule());
+  if (mods.includeICF) children.push(...buildConsentModule());
+  if (mods.includeAccountability) children.push(...buildAccountabilityModule());
+  if (mods.includeRandomization) children.push(...buildRandomizationModule());
+  if (mods.includeQuestionnaire) children.push(...buildQuestionnaireModule());
+  if (mods.includeImaging) children.push(...buildImagingModule());
+  if (mods.includeUnscheduled) children.push(...buildUnscheduledModule());
+
+  if (mods.includeAdhoc && (mods.adhocTitle || mods.adhocLines.length)) children.push(...buildAdhocModule(mods.adhocTitle, mods.adhocLines, mods.adhocInvestigator));
+
+  return new Document({ sections: [{ properties: {}, children }] });
+}
+
+// ────────────────────────────────────────────────────────────────────────────────
+// UI State types
+type ModsState = {
+  includeVitals: boolean;
+  includeECG: boolean;
+  includeLabs: boolean;
+  includePE: boolean;
+  includePK: boolean;
+  includeBiomarker: boolean;
+  // new toggles
+  includeAE: boolean;
+  includeConMeds: boolean;
+  includeICF: boolean;
+  includeAccountability: boolean;
+  includeRandomization: boolean;
+  includeQuestionnaire: boolean;
+  includeImaging: boolean;
+  includeUnscheduled: boolean;
+  // ad-hoc
+  includeAdhoc: boolean;
+  adhocTitle: string;
+  adhocLines: string[];
+  adhocInvestigator: boolean;
+};
+
+export default function SourceBuilderApp() {
+  const [fields, setFields] = useState<Record<string, string>>({});
+  const [mods, setMods] = useState<ModsState>({
+    includeVitals: true,
+    includeECG: true,
+    includeLabs: true,
+    includePE: false,
+    includePK: false,
+    includeBiomarker: false,
+
+    includeAE: false,
+    includeConMeds: false,
+    includeICF: false,
+    includeAccountability: false,
+    includeRandomization: false,
+    includeQuestionnaire: false,
+    includeImaging: false,
+    includeUnscheduled: false,
+
+    includeAdhoc: false,
+    adhocTitle: "",
+    adhocLines: [],
+    adhocInvestigator: false,
+  });
+  const [selfTestMsg, setSelfTestMsg] = useState<string>("");
+
+  const filename = useMemo(() => {
+    const safe = (s?: string) => (s || "").trim().replace(/[^a-z0-9]+/gi, "_").slice(0, 40);
+    return `${safe(fields.protocol) || "protocol"}_custom_source.docx`;
+  }, [fields.protocol]);
+
+  async function handleDownloadDocx() {
+    const doc = buildDoc(fields, mods);
+    const blob = await Packer.toBlob(doc);
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+    setTimeout(() => { document.body.removeChild(a); window.URL.revokeObjectURL(url); }, 0);
+  }
+
+  function runSelfTests() {
+    try {
+      const assert = (cond: boolean, msg: string) => { if (!cond) throw new Error(msg); };
+      assert(CONTACT_EMAIL.includes("@"), "CONTACT_EMAIL must be set");
+      assert(CALENDLY_URL.startsWith("http"), "CALENDLY_URL must be set");
+      assert(formatResearchDate("2025-08-28") === "28-AUG-2025", "Date format should be DD-MMM-YYYY (28-AUG-2025)");
+      const d = buildDoc({ protocol: "P1" }, { ...mods, includeAE: true, includeConMeds: true, includeICF: true, includeAccountability: true, includeRandomization: true, includeQuestionnaire: true, includeImaging: true, includeUnscheduled: true });
+      assert(!!d, "buildDoc should return a Document instance");
+      setSelfTestMsg("All self-tests passed ✔");
+    } catch (e: any) { setSelfTestMsg(`Self-tests failed: ${e?.message || e}`); }
+  }
+
+  // Preview list
+  const previewHtml = useMemo(() => {
+    const items: string[] = [];
+    if (mods.includeVitals) items.push("Vitals (C/F, repeat optional, Investigator assessment)");
+    if (mods.includeECG) items.push("12-Lead ECG (repeat ☐ Performed ☐ NA, Investigator assessment)");
+    if (mods.includeLabs) items.push(`Laboratory (Chemistry, Hematology, Urinalysis${mods.includePK ? ", PK" : ""}${mods.includeBiomarker ? ", Biomarker" : ""})`);
+    if (mods.includePE) items.push("Physical Exam (systems, Investigator assessment)");
+
+    if (mods.includeAE) items.push("Adverse Events / SAEs");
+    if (mods.includeConMeds) items.push("Concomitant Medications");
+    if (mods.includeICF) items.push("Informed Consent");
+    if (mods.includeAccountability) items.push("Study Drug / Device Accountability");
+    if (mods.includeRandomization) items.push("Randomization / Enrollment");
+    if (mods.includeQuestionnaire) items.push("Questionnaire / Scale");
+    if (mods.includeImaging) items.push("Imaging / Procedure");
+    if (mods.includeUnscheduled) items.push("Unscheduled Visit / Event");
+
+    if (mods.includeAdhoc) items.push(`Ad‑hoc Module – ${mods.adhocTitle || "Untitled"}`);
+
+    return (
+      <div className="prose max-w-none">
+        <h3 className="text-lg font-semibold mt-2">Modules included</h3>
+        <ul className="list-disc ml-5 text-sm">
+          {items.map((t) => <li key={t}>{t}</li>)}
+        </ul>
+        <div className="text-xs text-slate-600 mt-2">ALCOA++ guidance and investigator-only sign-offs are embedded in the exported document.</div>
+      </div>
+    );
+  }, [mods]);
+
+  return (
+    <div className="min-h-screen bg-white text-slate-900">
+      <header className="sticky top-0 z-20 bg-white/90 backdrop-blur border-b">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="font-semibold tracking-tight">{BRAND.name}</div>
+          <div className="flex items-center gap-4 text-sm">
+            <button onClick={runSelfTests} className="underline">Run self-check</button>
+            <a href={CALENDLY_URL} target="_blank" rel="noreferrer" className="underline">Book a call</a>
+            <a href={BRAND.contactHref} className="underline">Email us</a>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-6xl mx-auto px-4 py-6 grid lg:grid-cols-2 gap-8">
+        {/* Left: Form */}
+        <section className="space-y-4">
+          <h1 className="text-2xl font-bold">Create Source</h1>
+          <p className="text-sm text-slate-600">Preview, print, and download are free. Build protocol-specific source by selecting modules or adding a custom module.</p>
+
+          {/* Capitalized labels; Visit Date hint (DD-MMM-YYYY) */}
+          <div className="grid sm:grid-cols-2 gap-3">
+            {([
+              ["protocol","Protocol No"],
+              ["title","Protocol Title"],
+              ["site","Site No"],
+              ["pi","PI (printed)"],
+              ["subjectId","Subject ID"],
+              ["initials","Initials"],
+              ["visit","Visit"],
+              ["visitDate","Visit Date (DD-MMM-YYYY)"]
+            ] as const).map(([key,label]) => (
+              <label key={key} className="text-sm">
+                <div className="text-slate-600 mb-1">{label}</div>
+                <input className="w-full rounded border px-3 py-2" value={(fields as any)[key] || ""} onChange={(e) => setFields((s) => ({ ...s, [key]: (e.target as HTMLInputElement).value }))} />
+              </label>
+            ))}
+          </div>
+
+          {/* Modules */}
+          <div className="rounded-lg border p-3 space-y-2">
+            <div className="font-semibold">Modules</div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 text-sm">
+              <label className="flex items-center gap-2"><input type="checkbox" checked={mods.includeVitals} onChange={(e)=>setMods((m)=>({ ...m, includeVitals: e.target.checked }))} /> Vitals (C/F)</label>
+              <label className="flex items-center gap-2"><input type="checkbox" checked={mods.includeECG} onChange={(e)=>setMods((m)=>({ ...m, includeECG: e.target.checked }))} /> 12-Lead ECG</label>
+              <label className="flex items-center gap-2"><input type="checkbox" checked={mods.includeLabs} onChange={(e)=>setMods((m)=>({ ...m, includeLabs: e.target.checked }))} /> Labs</label>
+              <label className="flex items-center gap-2"><input type="checkbox" checked={mods.includePE} onChange={(e)=>setMods((m)=>({ ...m, includePE: e.target.checked }))} /> Physical Exam</label>
+
+              <label className="flex items-center gap-2"><input type="checkbox" checked={mods.includeAE} onChange={(e)=>setMods((m)=>({ ...m, includeAE: e.target.checked }))} /> AE / SAE Log</label>
+              <label className="flex items-center gap-2"><input type="checkbox" checked={mods.includeConMeds} onChange={(e)=>setMods((m)=>({ ...m, includeConMeds: e.target.checked }))} /> Con Meds</label>
+              <label className="flex items-center gap-2"><input type="checkbox" checked={mods.includeICF} onChange={(e)=>setMods((m)=>({ ...m, includeICF: e.target.checked }))} /> Informed Consent</label>
+              <label className="flex items-center gap-2"><input type="checkbox" checked={mods.includeAccountability} onChange={(e)=>setMods((m)=>({ ...m, includeAccountability: e.target.checked }))} /> Accountability</label>
+              <label className="flex items-center gap-2"><input type="checkbox" checked={mods.includeRandomization} onChange={(e)=>setMods((m)=>({ ...m, includeRandomization: e.target.checked }))} /> Randomization</label>
+              <label className="flex items-center gap-2"><input type="checkbox" checked={mods.includeQuestionnaire} onChange={(e)=>setMods((m)=>({ ...m, includeQuestionnaire: e.target.checked }))} /> Questionnaire</label>
+              <label className="flex items-center gap-2"><input type="checkbox" checked={mods.includeImaging} onChange={(e)=>setMods((m)=>({ ...m, includeImaging: e.target.checked }))} /> Imaging/Procedure</label>
+              <label className="flex items-center gap-2"><input type="checkbox" checked={mods.includeUnscheduled} onChange={(e)=>setMods((m)=>({ ...m, includeUnscheduled: e.target.checked }))} /> Unscheduled Visit</label>
+            </div>
+
+            {mods.includeLabs && (
+              <div className="grid sm:grid-cols-2 gap-2 text-sm mt-2">
+                <label className="flex items-center gap-2"><input type="checkbox" checked={mods.includePK} onChange={(e)=>setMods((m)=>({ ...m, includePK: e.target.checked }))} /> Include PK samples</label>
+                <label className="flex items-center gap-2"><input type="checkbox" checked={mods.includeBiomarker} onChange={(e)=>setMods((m)=>({ ...m, includeBiomarker: e.target.checked }))} /> Include Biomarker</label>
+              </div>
+            )}
+          </div>
+
+          {/* Ad‑hoc Module Builder */}
+          <div className="rounded-lg border p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="font-semibold">Ad‑hoc Module (build from scratch)</div>
+              <label className="text-sm flex items-center gap-2">
+                <input type="checkbox" checked={mods.includeAdhoc} onChange={(e)=>setMods((m)=>({ ...m, includeAdhoc: e.target.checked }))} /> Include
+              </label>
+            </div>
+            {mods.includeAdhoc && (
+              <>
+                <label className="text-sm block">
+                  <div className="text-slate-600 mb-1">Module Title</div>
+                  <input className="w-full rounded border px-3 py-2" value={mods.adhocTitle} onChange={(e)=>setMods((m)=>({ ...m, adhocTitle: (e.target as HTMLInputElement).value }))} />
+                </label>
+                <label className="text-sm block">
+                  <div className="text-slate-600 mb-1">Lines (one per row)</div>
+                  <textarea rows={4} className="w-full rounded border px-3 py-2" value={mods.adhocLines.join("\n")} onChange={(e)=>setMods((m)=>({ ...m, adhocLines: (e.target as HTMLTextAreaElement).value.split(/\r?\n/).filter(Boolean) }))} />
+                </label>
+                <label className="text-sm flex items-center gap-2">
+                  <input type="checkbox" checked={mods.adhocInvestigator} onChange={(e)=>setMods((m)=>({ ...m, adhocInvestigator: e.target.checked }))} /> Include Investigator assessment/signature
+                </label>
+              </>
+            )}
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <button onClick={handleDownloadDocx} className="rounded-lg bg-blue-600 text-white px-4 py-2">Download .docx</button>
+            <button onClick={()=>window.print()} className="rounded-lg border px-4 py-2">Print / Save as PDF</button>
+            <a href={BRAND.contactHref} className="rounded-lg border px-4 py-2">Custom build →</a>
+          </div>
+
+          {selfTestMsg && (
+            <div className={"text-sm mt-2 "+(selfTestMsg.toLowerCase().includes("failed")?"text-red-600":"text-green-700")}>{selfTestMsg}</div>
+          )}
+        </section>
+
+        {/* Right: Preview */}
+        <section className="min-h-[300px]">
+          <h2 className="text-xl font-semibold mt-6">Preview</h2>
+          <div className="mt-2 p-4 border rounded-lg">
+            <div className="text-sm text-gray-600">{BRAND.name} · Source Version v1.0</div>
+            <div className="grid md:grid-cols-2 gap-2 text-sm mt-2">
+              <div><span className="font-semibold">Protocol No:</span> {fields.protocol||""}</div>
+              <div><span className="font-semibold">Protocol Title:</span> {fields.title||""}</div>
+              <div><span className="font-semibold">Site No:</span> {fields.site||""}</div>
+              <div><span className="font-semibold">PI:</span> {fields.pi||""}</div>
+              <div><span className="font-semibold">Subject ID:</span> {fields.subjectId||""}</div>
+              <div><span className="font-semibold">Initials:</span> {fields.initials||""}</div>
+              <div><span className="font-semibold">Visit:</span> {fields.visit||""}</div>
+              <div><span className="font-semibold">Visit Date:</span> {formatResearchDate(fields.visitDate||"")}</div>
+            </div>
+            <div className="text-sm mt-2 italic">{BRAND.disclaimer}</div>
+            {previewHtml}
+          </div>
+        </section>
+      </main>
+
+      <footer className="py-8 border-t text-center text-sm text-slate-600">© {new Date().getFullYear()} {BRAND.name} · Free tool. Contact for protocol-specific source.</footer>
+    </div>
+  );
+}
