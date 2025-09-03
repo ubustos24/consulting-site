@@ -3,24 +3,47 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Noel Research Consulting</title>
-  <meta name="description" content="Noel Research Consulting provides remote clinical research services: source document creation, IRB submissions, budget/CTA negotiations, SOP development, and recruitment strategy—helping physician practices launch compliant trials without overhead.">
+  <title>Research Source Consulting – Clinical Research Ops & Tools</title>
+<meta name="description" content="Remote clinical research consulting: IRB & start-up, SOPs, coordinator coverage, enrollment strategy—and a free Source Builder to generate ALCOA-compliant study source templates (.docx).">
+
+  <meta name="description" content="Research Source Consulting provides remote clinical research services: source document creation, IRB submissions, budget/CTA negotiations, SOP development, and recruitment strategy—helping physician practices launch compliant trials without overhead.">
   <!-- Tailwind (CDN) -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-white text-gray-900">
 
-  <!-- Header -->
-  <header class="sticky top-0 bg-white shadow">
-    <div class="max-w-6xl mx-auto flex items-center justify-between p-4">
-      <div class="font-bold text-lg">Noel Research Consulting</div>
-      <nav class="space-x-4 hidden md:block">
-        <a href="#services" class="hover:underline">Services</a>
-        <a href="#process" class="hover:underline">Process</a>
-        <a href="#contact" class="hover:underline">Contact</a>
-      </nav>
-    </div>
-  </header>
+  <!-- Header / Nav -->
+<header class="site-header" style="border-bottom:1px solid #e5e7eb;background:#fff;">
+  <div style="max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;">
+    <a href="./" style="font-weight:700;font-size:18px;color:#111827;text-decoration:none;">
+      Research Source Consulting
+    </a>
+    <nav style="display:flex;gap:18px;align-items:center;">
+      <a href="#services" style="color:#374151;text-decoration:none;">Services</a>
+      <a href="#about" style="color:#374151;text-decoration:none;">About</a>
+      <a href="#contact" style="color:#374151;text-decoration:none;">Contact</a>
+      <!-- Tools dropdown (optional) -->
+      <div style="position:relative;">
+        <details style="cursor:pointer;">
+          <summary style="list-style:none;display:inline-flex;align-items:center;gap:6px;color:#374151;">Tools ▾</summary>
+          <div style="position:absolute;right:0;top:28px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.08);min-width:240px;padding:8px;">
+            <a href="./tool/" style="display:block;padding:10px 12px;border-radius:6px;color:#111827;text-decoration:none;">
+              Source Builder <span style="color:#6b7280;">(generate .docx source)</span>
+            </a>
+            <!-- Room for future tools
+            <a href="./calculators/" style="display:block;padding:10px 12px;border-radius:6px;color:#111827;text-decoration:none;">Startup Budget Calculator</a>
+            -->
+          </div>
+        </details>
+      </div>
+      <!-- Emphasized CTA always visible -->
+      <a href="./tool/" style="padding:8px 14px;border-radius:8px;background:#2563eb;color:#fff;text-decoration:none;font-weight:600;">
+        Launch Source Builder
+      </a>
+    </nav>
+  </div>
+</header>
+
 
 <!-- Link to Source Builder -->
 <div style="text-align:center; margin: 3rem 0;">
@@ -168,7 +191,7 @@
 
   <!-- Footer -->
   <footer class="py-6 border-t text-center text-sm text-gray-600">
-    © <span id="year"></span> Noel Research Consulting. All rights reserved.
+    © <span id="year"></span> Research Source Consulting. All rights reserved.
   </footer>
 
   <script>
