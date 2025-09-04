@@ -685,6 +685,10 @@ export default function SourceBuilderApp() {
       <footer className="py-8 border-t text-center text-sm text-slate-600">
         © {new Date().getFullYear()} {BRAND.name} · Templates are for guidance and must be adapted to each protocol/IRB.
       </footer>
+
+{/* Clean print-only doc (hidden on screen, shown only on print) */}
+<PrintDoc fields={fields} mods={mods} />
+
     </div>
   );
 }
