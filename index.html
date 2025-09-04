@@ -1,202 +1,223 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Research Source Consulting – Clinical Research Ops & Tools</title>
-<meta name="description" content="Remote clinical research consulting: IRB & start-up, SOPs, coordinator coverage, enrollment strategy—and a free Source Builder to generate ALCOA-compliant study source templates (.docx).">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1"
+    />
+    <title>Research Source Consulting – Free Tools for Clinical Research Coordinators</title>
+    <meta
+      name="description"
+      content="Free, in-browser tools for clinical research coordinators. Generate ALCOA-aligned source templates (.docx), plan visits, and more. No data uploaded—everything runs locally."
+    />
 
-  <!-- Tailwind (CDN) -->
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-</head>
-<body class="bg-white text-gray-900">
+    <!-- Open Graph / social preview -->
+    <meta property="og:title" content="Research Source Consulting – Tools for CRCs" />
+    <meta property="og:description" content="Generate ALCOA-aligned source (.docx), plan visits, and more—free tools that run in your browser." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://ubustos24.github.io/consulting-site/" />
 
-  <!-- Header / Nav -->
-<header style="border-bottom:1px solid #e5e7eb;background:#fff;">
-  <div style="max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;">
-    <a href="./" style="font-weight:700;font-size:18px;color:#111827;text-decoration:none;">
-      Research Source Consulting
-    </a>
-    <nav style="display:flex;gap:18px;align-items:center;">
-      <a href="#services" style="color:#374151;text-decoration:none;">Services</a>
-      <a href="#about" style="color:#374151;text-decoration:none;">About</a>
-      <a href="#tools" style="color:#374151;text-decoration:none;">Tools</a>
-      <a href="#contact" style="color:#374151;text-decoration:none;">Contact</a>
-    </nav>
-  </div>
-</header>
+    <!-- Tailwind (CDN for the static site) -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Hero -->
-  <section class="bg-gray-50 py-16">
-    <div class="max-w-6xl mx-auto px-4 grid md:grid-cols-2 gap-10 items-center">
-      <div>
-        <h1 class="text-4xl font-bold">Remote clinical research services for physician practices.</h1>
-        <p class="mt-4 text-lg text-gray-700">
-          We specialize in IRB submissions, source document creation, SOP development, and budget/CTA negotiations—
-          all performed remotely to help your site launch trials quickly and compliantly.
-        </p>
-        <div class="mt-6 space-x-4">
-          <a href="#contact" class="px-5 py-3 bg-blue-600 text-white rounded-lg">Book a discovery call</a>
-          <a href="#services" class="px-5 py-3 border rounded-lg">See services</a>
-        </div>
+    <!-- Fav icon (optional) -->
+    <!-- <link rel="icon" href="./favicon.ico" /> -->
+  </head>
+  <body class="bg-white text-slate-900">
+    <!-- Header / Nav -->
+    <header class="border-b border-slate-200 bg-white">
+      <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+        <a href="./" class="font-bold text-slate-900">Research Source Consulting</a>
+        <nav class="flex items-center gap-5 text-slate-700">
+          <a href="#tools" class="hover:text-slate-900">Tools</a>
+          <a href="#about" class="hover:text-slate-900">About</a>
+          <a href="#contact" class="hover:text-slate-900">Contact</a>
+        </nav>
       </div>
-    </div>
-  </section>
+    </header>
 
-  <!-- Services (remote only) -->
-  <section id="services" class="py-16 bg-gray-50">
-    <div class="max-w-6xl mx-auto px-4">
-      <h2 class="text-2xl font-semibold">Remote services & starter packages</h2>
-      <p class="mt-2 text-gray-700">All services delivered fully remote. Flat-fee or hourly ($75–$100/hr).</p>
-
-      <div class="mt-8 grid md:grid-cols-2 gap-6">
-        <div class="border rounded-lg p-6 bg-white">
-          <h3 class="font-bold mb-2">IRB Submissions & Regulatory</h3>
-          <ul class="text-sm space-y-2 list-disc ml-5">
-            <li>Central/local IRB applications & responses</li>
-            <li>ICF versions, 1572s, CVs, lab docs, training</li>
-            <li>Submission tracking and document control</li>
-          </ul>
-          <p class="text-gray-500 mt-2">Typical: $1,500–$3,000 per submission</p>
+    <main>
+      <!-- Hero -->
+      <section class="bg-gray-50 border-b border-slate-100">
+        <div class="max-w-5xl mx-auto px-4 py-12">
+          <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight">
+            Free tools that make clinical research work feel lighter
+          </h1>
+          <p class="mt-3 text-slate-600 max-w-2xl">
+            Built for coordinators, by a coordinator. Generate clean, ALCOA-aligned source,
+            keep visits organized, and reduce rework—right from your browser. No logins,
+            no uploads, no PHI stored.
+          </p>
+          <div class="mt-6">
+            <a href="#tools" class="inline-block rounded-lg bg-blue-600 text-white px-4 py-2 font-medium hover:bg-blue-700">
+              Explore Tools
+            </a>
+          </div>
         </div>
+      </section>
 
-        <div class="border rounded-lg p-6 bg-white">
-          <h3 class="font-bold mb-2">Source Document Creation</h3>
-          <ul class="text-sm space-y-2 list-disc ml-5">
-            <li>Visit-specific source templates & logs</li>
-            <li>Checklists, delegation & training logs</li>
-            <li>Word/PDF deliverables or eReg formats</li>
-          </ul>
-          <p class="text-gray-500 mt-2">Typical: $500–$1,500 per study</p>
+      <!-- Tools -->
+      <section id="tools" class="bg-white">
+        <div class="max-w-5xl mx-auto px-4 py-12">
+          <h2 class="text-2xl font-semibold">Tools</h2>
+          <p class="mt-2 text-slate-600">
+            In-browser utilities for clinical research teams. Everything runs locally.
+          </p>
+
+          <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- LIVE: Source Builder -->
+            <a
+              href="./tool/"
+              class="block rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <div class="font-semibold">Source Builder</div>
+              <p class="mt-1 text-sm leading-6 text-slate-600">
+                Generate ALCOA-aligned source templates and export to .docx. Includes Vitals (°C/°F), ECG with Repeat/NA, Labs, PK (optional), PE, and more.
+              </p>
+              <div class="mt-3 text-xs text-slate-500">Last updated: 2025-08</div>
+            </a>
+
+            <!-- Coming soon placeholders -->
+            <div
+              aria-disabled="true"
+              class="rounded-xl border border-dashed border-slate-200 bg-white p-4 opacity-60 cursor-not-allowed"
+            >
+              <div class="font-semibold">Visit Day Checklist</div>
+              <p class="mt-1 text-sm leading-6 text-slate-600">
+                Build a protocol-specific task list with timestamps and signature points. <span class="italic">Coming soon</span>.
+              </p>
+            </div>
+
+            <div
+              aria-disabled="true"
+              class="rounded-xl border border-dashed border-slate-200 bg-white p-4 opacity-60 cursor-not-allowed"
+            >
+              <div class="font-semibold">Deviation & CAPA Helper</div>
+              <p class="mt-1 text-sm leading-6 text-slate-600">
+                Consistent language prompts and CAPA scaffolds that match common sponsor expectations. <span class="italic">Coming soon</span>.
+              </p>
+            </div>
+
+            <div
+              aria-disabled="true"
+              class="rounded-xl border border-dashed border-slate-200 bg-white p-4 opacity-60 cursor-not-allowed"
+            >
+              <div class="font-semibold">Con Meds / AE Log Assist</div>
+              <p class="mt-1 text-sm leading-6 text-slate-600">
+                Structured entry helpers that map to typical EDC fields. <span class="italic">Coming soon</span>.
+              </p>
+            </div>
+
+            <div
+              aria-disabled="true"
+              class="rounded-xl border border-dashed border-slate-200 bg-white p-4 opacity-60 cursor-not-allowed"
+            >
+              <div class="font-semibold">Lab / PK Packout Builder</div>
+              <p class="mt-1 text-sm leading-6 text-slate-600">
+                Auto-generate collection + processing checklists and labels. <span class="italic">Coming soon</span>.
+              </p>
+            </div>
+
+            <div
+              aria-disabled="true"
+              class="rounded-xl border border-dashed border-slate-200 bg-white p-4 opacity-60 cursor-not-allowed"
+            >
+              <div class="font-semibold">Enrollment Funnel Tracker</div>
+              <p class="mt-1 text-sm leading-6 text-slate-600">
+                Simple CSV/Sheets template with standard definitions. <span class="italic">Coming soon</span>.
+              </p>
+            </div>
+          </div>
+
+          <!-- Note for contributors or future you -->
+          <p class="mt-6 text-xs text-slate-500">
+            Want a tool added? <a href="#contact" class="underline">Send a request</a>.
+          </p>
         </div>
+      </section>
 
-        <div class="border rounded-lg p-6 bg-white">
-          <h3 class="font-bold mb-2">Budget & CTA Negotiations</h3>
-          <ul class="text-sm space-y-2 list-disc ml-5">
-            <li>Budget review & overhead alignment</li>
-            <li>Screen-fail, re-screen, procedure coverage</li>
-            <li>Payment terms & holdbacks</li>
-          </ul>
-          <p class="text-gray-500 mt-2">Typical: $1,000–$2,000 (or 3–5% of budget)</p>
+      <!-- About -->
+      <section id="about" class="bg-gray-50 border-y border-slate-100">
+        <div class="max-w-5xl mx-auto px-4 py-12">
+          <h2 class="text-2xl font-semibold">About</h2>
+          <p class="mt-2 text-slate-600 max-w-3xl">
+            Research Source Consulting builds small, fast tools that help coordinators work accurately and
+            confidently. We design around ALCOA, typical EDC patterns, and what monitors actually look for,
+            while keeping data on <em>your</em> machine. No uploads and no PHI storage.
+          </p>
         </div>
+      </section>
 
-        <div class="border rounded-lg p-6 bg-white">
-          <h3 class="font-bold mb-2">SOP Development</h3>
-          <ul class="text-sm space-y-2 list-disc ml-5">
-            <li>10–12 core GCP-aligned SOPs</li>
-            <li>Training slides & implementation guide</li>
-            <li>Version control & QC plan</li>
-          </ul>
-          <p class="text-gray-500 mt-2">Typical: $2,500–$5,000 bundle</p>
+      <!-- Contact -->
+      <section id="contact" class="bg-white">
+        <div class="max-w-5xl mx-auto px-4 py-12">
+          <h2 class="text-2xl font-semibold">Contact</h2>
+          <p class="mt-2 text-slate-600">Have a tool idea or need help? Reach out.</p>
+
+          <!-- Simple contact form via Formspree (replace action URL with your endpoint) -->
+          <form
+            action="https://formspree.io/f/your-form-id"
+            method="POST"
+            class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl"
+          >
+            <label class="text-sm">
+              <div class="text-slate-600 mb-1">Your name *</div>
+              <input
+                class="w-full rounded border border-slate-300 px-3 py-2"
+                name="name"
+                required
+              />
+            </label>
+
+            <label class="text-sm">
+              <div class="text-slate-600 mb-1">Email *</div>
+              <input
+                class="w-full rounded border border-slate-300 px-3 py-2"
+                type="email"
+                name="email"
+                required
+              />
+            </label>
+
+            <label class="sm:col-span-2 text-sm">
+              <div class="text-slate-600 mb-1">Message *</div>
+              <textarea
+                class="w-full rounded border border-slate-300 px-3 py-2"
+                name="message"
+                rows="4"
+                required
+              ></textarea>
+            </label>
+
+            <div class="sm:col-span-2">
+              <button
+                type="submit"
+                class="rounded-lg bg-blue-600 text-white px-4 py-2 font-medium hover:bg-blue-700"
+              >
+                Send
+              </button>
+              <p class="mt-2 text-xs text-slate-500">
+                Please don’t include PHI. We’ll reply within 1–2 business days.
+              </p>
+            </div>
+          </form>
+
+          <!-- If you prefer email link instead of a form: -->
+          <!-- <p class="mt-6 text-sm">Email: <a href="mailto:ubustos24@gmail.com" class="underline">ubustos24@gmail.com</a></p> -->
         </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-200 bg-white">
+      <div class="max-w-5xl mx-auto px-4 py-8 text-sm text-slate-600 text-center">
+        © <span id="year"></span> Research Source Consulting · Templates are for guidance and must be adapted to each protocol/IRB.
       </div>
+    </footer>
 
-      <div class="mt-8 border rounded-lg p-6 bg-white">
-        <h3 class="font-bold mb-2">Recruitment Strategy (Add-On)</h3>
-        <p class="text-sm text-gray-700">Pre-screen trackers, referral workflows, outreach templates, and KPI dashboard starter.</p>
-        <p class="text-gray-500 mt-2">Typical: $500–$1,500</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Process -->
-  <section id="process" class="py-16">
-    <div class="max-w-6xl mx-auto px-4">
-      <h2 class="text-2xl font-semibold">How we work</h2>
-      <ol class="mt-6 grid md:grid-cols-4 gap-6 text-sm">
-        <li class="border p-4 rounded-lg">
-          <div class="text-xs text-gray-500">Step 1</div>
-          <div class="font-bold">Discovery</div>
-          <p class="mt-1 text-gray-700">30-min call to map goals, timelines, and constraints.</p>
-        </li>
-        <li class="border p-4 rounded-lg">
-          <div class="text-xs text-gray-500">Step 2</div>
-          <div class="font-bold">Scope & Budget</div>
-          <p class="mt-1 text-gray-700">Fixed-fee proposal with clear deliverables and timelines.</p>
-        </li>
-        <li class="border p-4 rounded-lg">
-          <div class="text-xs text-gray-500">Step 3</div>
-          <div class="font-bold">Build & Implement</div>
-          <p class="mt-1 text-gray-700">IRB submissions, source, SOPs, and budget negotiations as needed.</p>
-        </li>
-        <li class="border p-4 rounded-lg">
-          <div class="text-xs text-gray-500">Step 4</div>
-          <div class="font-bold">Handoff & Support</div>
-          <p class="mt-1 text-gray-700">Training, QC, and optional retainer for ongoing trials.</p>
-        </li>
-      </ol>
-    </div>
-  </section>
-
-<!-- Tools -->
-<section id="tools" class="bg-gray-50 border-y border-slate-100">
-  <div class="max-w-5xl mx-auto px-4 py-12">
-    <h2 class="text-2xl font-semibold text-slate-900">Tools</h2>
-    <p class="mt-2 text-slate-600">
-      Free, in-browser utilities for clinical research teams. No data is uploaded—everything runs locally.
-    </p>
-
-    <!-- Tools grid -->
-    <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      <!-- Tool: Source Builder -->
-      <a href="./tool/"
-         class="block rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow focus:outline-none focus:ring-2 focus:ring-blue-500">
-        <div class="font-semibold text-slate-900">Source Builder</div>
-        <p class="mt-1 text-sm leading-6 text-slate-600">
-          Generate ALCOA-aligned source templates and export to .docx. Includes Vitals, ECG (with Repeat/NA),
-          Labs, PK (optional), PE, and more.
-        </p>
-        <div class="mt-3 text-xs text-slate-500">Last updated: 2025-08</div>
-      </a>
-
-      <!-- Future tools (disabled placeholder) -->
-      <div aria-disabled="true"
-           class="rounded-xl border border-dashed border-slate-200 bg-white p-4 opacity-60 cursor-not-allowed">
-        <div class="font-semibold text-slate-900">Startup Budget Calculator</div>
-        <p class="mt-1 text-sm leading-6 text-slate-600">
-          Estimate start-up and monthly costs for a new clinical site. <span class="italic">Coming soon</span>.
-        </p>
-      </div>
-
-      <div aria-disabled="true"
-           class="rounded-xl border border-dashed border-slate-200 bg-white p-4 opacity-60 cursor-not-allowed">
-        <div class="font-semibold text-slate-900">Enrollment Capacity Planner</div>
-        <p class="mt-1 text-sm leading-6 text-slate-600">
-          Model staff/time capacity vs. enrollment targets. <span class="italic">Coming soon</span>.
-        </p>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-  <!-- Contact (static) -->
-  <section id="contact" class="py-20">
-    <div class="max-w-3xl mx-auto px-4">
-      <h2 class="text-2xl font-semibold">Start your first (or next) study</h2>
-
-      <!-- To make this form send email without a server, create a free Formspree endpoint and replace the action URL below -->
-      <form action="https://formspree.io/f/yourEndpoint" method="POST" class="mt-6 grid gap-4 border rounded-xl p-6">
-        <input class="border p-3 rounded" name="name" type="text" placeholder="Full name" required />
-        <input class="border p-3 rounded" name="email" type="email" placeholder="Work email" required />
-        <input class="border p-3 rounded" name="org" type="text" placeholder="Organization / clinic" />
-        <textarea class="border p-3 rounded" name="message" rows="5" placeholder="What support do you need?"></textarea>
-        <button class="px-5 py-3 bg-blue-600 text-white rounded-lg">Send message</button>
-      </form>
-
-      <p class="mt-4 text-sm text-gray-600">
-        Security note: Do not include PHI. We provide HIPAA-aware services and can execute a BAA when appropriate.
-      </p>
-    </div>
-  </section>
-
-  <!-- Footer -->
-  <footer class="py-6 border-t text-center text-sm text-gray-600">
-    © <span id="year"></span> Research Source Consulting. All rights reserved.
-  </footer>
-
-  <script>
-    document.getElementById('year').textContent = new Date().getFullYear();
-  </script>
-</body>
+    <script>
+      document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+  </body>
 </html>
