@@ -13,20 +13,13 @@ import {
 } from "docx";
 
 // ────────────────────────────────────────────────────────────────────────────────
-// Research Source Docs – Source Builder (repeatable modules, improved layout)
-// Notes:
-// - DD-MMM-YYYY validation (e.g., 28-AUG-2025)
-// - Repeatable modules: Vitals, ECG (triplicates etc.)
-// - New modules: Physical Exam, Neuro Exam
-// - Removed: AEs, Con Meds (separate tool later)
-// - Investigator-only signature lines on applicable modules
-// - Cleaner preview with cards/dividers; DOCX mirrors content
+// Research Source Docs – Source Builder (GCP-style, repeatable modules, PI assessment)
 // ────────────────────────────────────────────────────────────────────────────────
 
 const BRAND = {
   name: "Research Source Consulting",
   disclaimer:
-    "Complete in real time. Correct with single line, date/initial. Use 24-hr time. Do not record PHI beyond protocol requirements.",
+    "Complete in real time. Correct with single line, date/initial. Use 24-hr time. Do not record PHI beyond protocol requirements. Retain originals; ensure contemporaneous entries.",
 };
 
 // Month map for DD-MMM-YYYY
@@ -35,7 +28,6 @@ const MONTHS = [
 ];
 
 function toDmmmyyyy(input: string): string {
-  // accepts ISO-like or DD-MMM-YYYY already
   const iso = new Date(input);
   if (!isNaN(iso.getTime())) {
     const dd = String(iso.getDate()).padStart(2, "0");
@@ -43,7 +35,6 @@ function toDmmmyyyy(input: string): string {
     const yyyy = iso.getFullYear();
     return `${dd}-${m}-${yyyy}`;
   }
-  // Try DD-MMM-YYYY strict
   const m = input.match(/^(\d{2})-([A-Za-z]{3})-(\d{4})$/);
   if (m) {
     const [_, dd, mon, yyyy] = m;
@@ -53,9 +44,8 @@ function toDmmmyyyy(input: string): string {
       return `${dd}-${mon.toUpperCase()}-${yyyy}`;
     }
   }
-  return ""; // invalid shows blank in preview/docx
+  return "";
 }
-
 function validateDmmmyyyy(input: string): true | string {
   const out = toDmmmyyyy(input);
   return out ? true : "Use DD-MMM-YYYY (e.g., 28-AUG-2025)";
@@ -72,7 +62,6 @@ function HeaderTable(fields: Record<string, string>) {
         children: [
           new TableCell({
             children: [
-              new Paragraph({ children: [L("Protocol No: "), new TextRun(fields.protocol || " ")] }),
               new Paragraph({ children: [L("Protocol Title: "), new TextRun(fields.title || " ")] }),
               new Paragraph({
                 children: [
@@ -109,21 +98,25 @@ function HeaderTable(fields: Record<string, string>) {
 type ModuleType =
   | "consent"
   | "eligibility"
-  | "screening"
-  | "baseline"
   | "vitals"
   | "ecg"
   | "labs"
   | "pk"
   | "physicalExam"
-  | "neuroExam";
+  | "neuroExam"
+  | "imaging"
+  | "procedure"
+  | "ipAccountability"
+  | "notes"
+  | "nextAppointment"
+  | "attachments";
 
 type ModuleInstance = {
   id: string;
   type: ModuleType;
-  title: string;      // frozen label
-  repeatCount?: number; // for repeatable modules (e.g., vitals/ECG)
-  data?: Record<string, string>; // future free-form fields if needed
+  title: string;
+  repeatCount?: number; // for vitals/ECG
+  data?: Record<string, string>;
 };
 
 const LIBRARY: { value: ModuleType; label: string; repeatable?: boolean }[] = [
@@ -133,10 +126,14 @@ const LIBRARY: { value: ModuleType; label: string; repeatable?: boolean }[] = [
   { value: "pk", label: "PK Collection (optional per protocol)" },
   { value: "physicalExam", label: "Physical Exam (Investigator)" },
   { value: "neuroExam", label: "Neurological Exam (Investigator)" },
+  { value: "imaging", label: "Imaging / Radiology" },
+  { value: "procedure", label: "Procedure / Intervention" },
+  { value: "ipAccountability", label: "IP Accountability (Drug/Device)" },
+  { value: "notes", label: "Notes" },
+  { value: "nextAppointment", label: "Next Appointment / Instructions" },
+  { value: "attachments", label: "Attachments / Images (placeholder)" },
   { value: "consent", label: "Informed Consent Checklist" },
   { value: "eligibility", label: "Eligibility Checklist" },
-  { value: "screening", label: "Screening Visit" },
-  { value: "baseline", label: "Baseline / Visit 1" },
 ];
 
 function newId() {
@@ -154,8 +151,13 @@ function SectionHeading(text: string) {
   return new Paragraph({
     text,
     heading: HeadingLevel.HEADING_2,
-    spacing: { before: 200, after: 120 },
+    spacing: { before: 220, after: 120 },
   });
+}
+function PiAssessment() {
+  return [
+    Para("PI overall assessment:  Normal ☐   Abnormal (NCS) ☐   Abnormal (CS) ☐   Comments: ____________________________________"),
+  ];
 }
 
 function buildModuleDocx(inst: ModuleInstance): Paragraph[] {
@@ -171,7 +173,7 @@ function buildModuleDocx(inst: ModuleInstance): Paragraph[] {
         out.push(Bullet("Time ____:____  HR ___  BP ___/___  RR ___  Temp ___°C (___°F)  SpO2 ___%"));
         out.push(Bullet("Weight ___ kg  Height ___ cm  BMI ___ kg/m²  (omit if remote)"));
       }
-      // Investigator sign (assessment responsibility)
+      out.push(...PiAssessment());
       out.push(Para("Investigator (print/sign/date): ________________________________"));
       break;
     }
@@ -179,24 +181,28 @@ function buildModuleDocx(inst: ModuleInstance): Paragraph[] {
       const n = inst.repeatCount ?? 1;
       out.push(Para("12-lead ECG per protocol. Record times & any repeats."));
       for (let i = 1; i <= n; i++) {
-        out.push(Para(`ECG ${i}:  Date ${"____-___-____"}  Time ____:____  QTc ___ ms  Rhythm ____.  Repeat? Yes ☐  No ☐  N/A ☐`));
+        out.push(Para(`ECG ${i}:  Date ____-___-____  Time ____:____  QTc ___ ms  Rhythm ____.  Repeat? Yes ☐  No ☐  N/A ☐`));
       }
+      out.push(...PiAssessment());
       out.push(Para("Investigator (print/sign/date): ________________________________"));
       break;
     }
     case "labs": {
       out.push(Bullet("Specimen | Date | Time | Fasting? | Volume | Tube | Collected By | Processed? | Centrifuge | Frozen Temp | Shipped? | Courier | Notes"));
+      out.push(...PiAssessment());
       break;
     }
     case "pk": {
       out.push(Para("PK per protocol (only if required)."));
       out.push(Bullet("Timepoint | Actual Time | Volume | Tube/Label | Handling | Notes"));
+      out.push(...PiAssessment());
       break;
     }
     case "physicalExam": {
-      out.push(Para("Focused/Full Physical Exam (check systems, document abnormals):"));
+      out.push(Para("Focused/Full Physical Exam (check systems; document abnormals):"));
       out.push(Bullet("General | HEENT | Cardiac | Respiratory | Abdomen | Musculoskeletal | Skin"));
       out.push(Para("Findings / Notes: _______________________________________________________________"));
+      out.push(...PiAssessment());
       out.push(Para("Investigator (print/sign/date): ________________________________"));
       break;
     }
@@ -204,7 +210,47 @@ function buildModuleDocx(inst: ModuleInstance): Paragraph[] {
       out.push(Para("Neurological Exam (document abnormals/changes):"));
       out.push(Bullet("Mental status | Cranial nerves | Motor | Sensory | Reflexes | Coordination | Gait"));
       out.push(Para("Findings / Notes: _______________________________________________________________"));
+      out.push(...PiAssessment());
       out.push(Para("Investigator (print/sign/date): ________________________________"));
+      break;
+    }
+    case "imaging": {
+      out.push(Bullet("Modality (CT/MRI/US/X-ray) | Body region | Date/Time | Performed at (facility)"));
+      out.push(Bullet("Result summary / Impression: _________________________________________________"));
+      out.push(...PiAssessment());
+      out.push(Para("If images/reports provided, file under Attachments and reference file name(s)."));
+      break;
+    }
+    case "procedure": {
+      out.push(Bullet("Procedure Type | Location | Date/Time | Operator"));
+      out.push(Bullet("Pre-procedure checks (consent/fasting/allergies) | Sedation ☐  No sedation ☐"));
+      out.push(Bullet("Samples collected (type/volume/labels) | Complications (describe, if any)"));
+      out.push(...PiAssessment());
+      out.push(Para("Investigator (print/sign/date): ________________________________"));
+      break;
+    }
+    case "ipAccountability": {
+      out.push(Bullet("IP/Device | Lot/Kit | Strength/Model | Exp. Date | Quantity dispensed | Returned | Balance"));
+      out.push(Bullet("Storage conditions (temp/log) | Chain of custody | Destroyed? (date/by whom)"));
+      out.push(Para("Pharmacist/Designee (print/sign/date): ________________________________"));
+      out.push(Para("Investigator (print/sign/date): ________________________________"));
+      break;
+    }
+    case "notes": {
+      out.push(Para("Notes / Deviations / Clarifications:"));
+      out.push(Para("______________________________________________________________________________"));
+      out.push(Para("______________________________________________________________________________"));
+      break;
+    }
+    case "nextAppointment": {
+      out.push(Bullet("Next visit date: ____-___-____  Window: ______  Time: ____:____"));
+      out.push(Bullet("Instructions provided: ________________________________________________"));
+      out.push(Bullet("Coordinator contact: __________________  Phone: __________________"));
+      break;
+    }
+    case "attachments": {
+      out.push(Para("Attachments / Images: Record file names and place printed copies behind this form."));
+      out.push(Bullet("File/Report name(s): ________________________________________________"));
       break;
     }
     case "consent": {
@@ -215,7 +261,7 @@ function buildModuleDocx(inst: ModuleInstance): Paragraph[] {
       out.push(Bullet("Questions answered; no coercion/undue influence"));
       out.push(Bullet("Assessed comprehension (teach-back)"));
       out.push(Bullet("Signatures obtained before any procedures"));
-      out.push(Para("Signature Times (24-hr): Participant ____:____  LAR ____:____  Person Obtaining Consent ____:____"));
+      out.push(Para("Signature Times (24-hr): Participant ____:____  LAR ____:____  POC ____:____"));
       break;
     }
     case "eligibility": {
@@ -227,22 +273,6 @@ function buildModuleDocx(inst: ModuleInstance): Paragraph[] {
       out.push(Bullet("1) ______________________    Absent ☐    Present (exclusion) ☐    Evidence: __________"));
       out.push(Bullet("2) ______________________    Absent ☐    Present (exclusion) ☐    Evidence: __________"));
       out.push(Bullet("3) ______________________    Absent ☐    Present (exclusion) ☐    Evidence: __________"));
-      break;
-    }
-    case "screening": {
-      out.push(Bullet("Pre-consent procedures performed: None ☐  (If any) __________"));
-      out.push(Bullet("Medical history obtained; updates documented"));
-      out.push(Bullet("Physical exam performed; abnormal findings documented"));
-      out.push(Bullet("Vitals (HR/BP/RR/Temp/SpO2/Wt/Ht)"));
-      out.push(Bullet("Con meds reviewed; changes recorded"));
-      out.push(Bullet("Labs/ECG per protocol; collection times recorded"));
-      break;
-    }
-    case "baseline": {
-      out.push(Bullet("Randomization performed?  Yes ☐  No ☐    Code: ______"));
-      out.push(Bullet("Visit procedures completed per protocol"));
-      out.push(Bullet("Study drug/device dispensed; lot/kit/qty/exp recorded"));
-      out.push(Bullet("Instructions provided (dose, storage, diary)"));
       break;
     }
   }
@@ -257,7 +287,7 @@ function buildDoc(mods: ModuleInstance[], fields: Record<string, string>) {
       heading: HeadingLevel.HEADING_1,
       alignment: AlignmentType.LEFT,
     }),
-    new Paragraph({ text: "Source Version: v1.1", spacing: { after: 100 } }),
+    new Paragraph({ text: "Source Version: v1.2", spacing: { after: 100 } }),
     HeaderTable(fields),
     new Paragraph({ text: BRAND.disclaimer, spacing: { before: 120, after: 120 } }),
     ...mods.flatMap(buildModuleDocx),
@@ -294,8 +324,8 @@ export default function SourceBuilderApp() {
 
   const filename = useMemo(() => {
     const safe = (s?: string) => (s || "").trim().replace(/[^a-z0-9]+/gi, "_").slice(0, 40);
-    return `${safe(fields.protocol) || "protocol"}_source.docx`;
-  }, [fields.protocol]);
+    return `${safe(fields.title) || "source"}_doc.docx`;
+  }, [fields.title]);
 
   function addModule() {
     const meta = LIBRARY.find((l) => l.value === toAdd)!;
@@ -310,11 +340,9 @@ export default function SourceBuilderApp() {
       },
     ]);
   }
-
   function removeModule(id: string) {
     setMods((m) => m.filter((x) => x.id !== id));
   }
-
   function changeRepeat(id: string, delta: number) {
     setMods((m) =>
       m.map((x) =>
@@ -326,7 +354,6 @@ export default function SourceBuilderApp() {
   }
 
   async function handleDownloadDocx() {
-    // Validate date
     if (fields.visitDate) {
       const v = validateDmmmyyyy(fields.visitDate);
       if (v !== true) {
@@ -341,18 +368,16 @@ export default function SourceBuilderApp() {
     setTimeout(() => setMsg(null), 3000);
   }
 
-  // Preview helpers
   const HeaderPreview = (
     <div className="border rounded-lg p-4 bg-white">
-      <div className="text-sm text-slate-600">{BRAND.name} · Source Version v1.1</div>
+      <div className="text-sm text-slate-600">{BRAND.name} · Source Version v1.2</div>
       <div className="mt-2 grid sm:grid-cols-2 gap-2 text-sm">
-        <div><span className="font-semibold">Protocol No:</span> {fields.protocol || ""}</div>
-        <div><span className="font-semibold">Subject ID:</span> {fields.subjectId || ""}</div>
         <div><span className="font-semibold">Protocol Title:</span> {fields.title || ""}</div>
-        <div><span className="font-semibold">Initials:</span> {fields.initials || ""}</div>
+        <div><span className="font-semibold">Subject ID:</span> {fields.subjectId || ""}</div>
         <div><span className="font-semibold">Site No:</span> {fields.site || ""}</div>
-        <div><span className="font-semibold">Visit:</span> {fields.visit || ""}</div>
+        <div><span className="font-semibold">Initials:</span> {fields.initials || ""}</div>
         <div><span className="font-semibold">PI:</span> {fields.pi || ""}</div>
+        <div><span className="font-semibold">Visit:</span> {fields.visit || ""}</div>
         <div><span className="font-semibold">Visit Date:</span> {toDmmmyyyy(fields.visitDate || "")}</div>
       </div>
       <div className="text-sm mt-2 italic">{BRAND.disclaimer}</div>
@@ -360,35 +385,33 @@ export default function SourceBuilderApp() {
   );
 
   const ModuleCard = (inst: ModuleInstance) => {
-    // generic box with title/dividers
+    const RepeatControl =
+      (inst.type === "vitals" || inst.type === "ecg") ? (
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-slate-600">Repeat</span>
+          <button className="rounded border px-2 text-sm" onClick={() => changeRepeat(inst.id, -1)}>−</button>
+          <span className="text-sm font-medium">{inst.repeatCount ?? 1}×</span>
+          <button className="rounded border px-2 text-sm" onClick={() => changeRepeat(inst.id, +1)}>+</button>
+        </div>
+      ) : null;
+
+    const PiBlock = (
+      <div className="rounded-lg border p-3">
+        PI overall assessment:
+        <span className="ml-2">Normal ☐</span>
+        <span className="ml-2">Abnormal (NCS) ☐</span>
+        <span className="ml-2">Abnormal (CS) ☐</span>
+        <div className="mt-2">Comments: _____________________________________________</div>
+      </div>
+    );
+
     return (
       <div key={inst.id} className="rounded-xl border border-slate-200 bg-white p-4">
         <div className="flex items-center justify-between">
           <div className="font-semibold">{inst.title}</div>
           <div className="flex items-center gap-2">
-            {(inst.type === "vitals" || inst.type === "ecg") && (
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-600">Repeat</span>
-                <button
-                  className="rounded border px-2 text-sm"
-                  onClick={() => changeRepeat(inst.id, -1)}
-                  title="Decrease repeats"
-                >−</button>
-                <span className="text-sm font-medium">{inst.repeatCount ?? 1}×</span>
-                <button
-                  className="rounded border px-2 text-sm"
-                  onClick={() => changeRepeat(inst.id, +1)}
-                  title="Increase repeats"
-                >+</button>
-              </div>
-            )}
-            <button
-              className="rounded border px-2 py-1 text-xs text-slate-700"
-              onClick={() => removeModule(inst.id)}
-              title="Remove module"
-            >
-              Remove
-            </button>
+            {RepeatControl}
+            <button className="rounded border px-2 py-1 text-xs text-slate-700" onClick={() => removeModule(inst.id)}>Remove</button>
           </div>
         </div>
         <div className="mt-3 border-t border-slate-200 pt-3 text-sm text-slate-700 space-y-2">
@@ -404,12 +427,14 @@ export default function SourceBuilderApp() {
                   </div>
                 ))}
               </div>
+              {PiBlock}
               <div className="pt-2 text-slate-800">Investigator (print/sign/date): ________________________________</div>
             </>
           )}
+
           {inst.type === "ecg" && (
             <>
-              <div>12-lead ECG per protocol. Record times & any repeats.</div>
+              <div>12-lead ECG per protocol. Record times & repeats.</div>
               <div className="grid gap-2">
                 {Array.from({ length: inst.repeatCount ?? 1 }).map((_, i) => (
                   <div key={i} className="rounded-lg border p-3">
@@ -418,19 +443,29 @@ export default function SourceBuilderApp() {
                   </div>
                 ))}
               </div>
+              {PiBlock}
               <div className="pt-2 text-slate-800">Investigator (print/sign/date): ________________________________</div>
             </>
           )}
+
           {inst.type === "labs" && (
-            <div className="rounded-lg border p-3">
-              Specimen | Date | Time | Fasting? | Volume | Tube | Collected By | Processed? | Centrifuge | Frozen Temp | Shipped? | Courier | Notes
-            </div>
+            <>
+              <div className="rounded-lg border p-3">
+                Specimen | Date | Time | Fasting? | Volume | Tube | Collected By | Processed? | Centrifuge | Frozen Temp | Shipped? | Courier | Notes
+              </div>
+              {PiBlock}
+            </>
           )}
+
           {inst.type === "pk" && (
-            <div className="rounded-lg border p-3">
-              PK per protocol (only if required). Timepoint | Actual Time | Volume | Tube/Label | Handling | Notes
-            </div>
+            <>
+              <div className="rounded-lg border p-3">
+                PK per protocol. Timepoint | Actual Time | Volume | Tube/Label | Handling | Notes
+              </div>
+              {PiBlock}
+            </>
           )}
+
           {inst.type === "physicalExam" && (
             <>
               <div>Focused/Full Physical Exam (document abnormals):</div>
@@ -438,9 +473,11 @@ export default function SourceBuilderApp() {
                 General · HEENT · Cardiac · Respiratory · Abdomen · Musculoskeletal · Skin
                 <div className="mt-2">Findings / Notes: _____________________________________________</div>
               </div>
+              {PiBlock}
               <div className="pt-2 text-slate-800">Investigator (print/sign/date): ________________________________</div>
             </>
           )}
+
           {inst.type === "neuroExam" && (
             <>
               <div>Neurological Exam (document abnormals/changes):</div>
@@ -448,25 +485,84 @@ export default function SourceBuilderApp() {
                 Mental status · Cranial nerves · Motor · Sensory · Reflexes · Coordination · Gait
                 <div className="mt-2">Findings / Notes: _____________________________________________</div>
               </div>
+              {PiBlock}
               <div className="pt-2 text-slate-800">Investigator (print/sign/date): ________________________________</div>
             </>
           )}
-          {inst.type === "consent" && (
+
+          {inst.type === "imaging" && (
             <>
               <div className="rounded-lg border p-3">
-                ICF Version/Date: __________ &nbsp;&nbsp; IRB: __________
-                <ul className="list-disc pl-5 mt-2 space-y-1">
-                  <li>Private area used; identity verified</li>
-                  <li>Provided IRB-approved ICF and time to review</li>
-                  <li>Discussed purpose, procedures, risks/benefits, alternatives</li>
-                  <li>Questions answered; no coercion/undue influence</li>
-                  <li>Assessed comprehension (teach-back)</li>
-                  <li>Signatures obtained before any procedures</li>
-                </ul>
-                <div className="mt-2">Signature Times (24-hr): Participant ____:____  LAR ____:____  POC ____:____</div>
+                Modality (CT/MRI/US/X-ray) | Body region | Date/Time | Performed at (facility)
+                <div className="mt-2">Result summary / Impression: _____________________________________________</div>
               </div>
+              {PiBlock}
+              <div className="text-xs text-slate-500">If images/reports provided, file under Attachments and note file names.</div>
             </>
           )}
+
+          {inst.type === "procedure" && (
+            <>
+              <div className="rounded-lg border p-3">
+                Procedure Type | Location | Date/Time | Operator
+                <div className="mt-1">Checks: consent ☐  fasting ☐  allergies ☐  sedation ☐/☐ no sedation</div>
+                <div className="mt-1">Samples collected / Handling: ___________________________________</div>
+                <div className="mt-1">Complications (if any): _________________________________________</div>
+              </div>
+              {PiBlock}
+              <div className="pt-2 text-slate-800">Investigator (print/sign/date): ________________________________</div>
+            </>
+          )}
+
+          {inst.type === "ipAccountability" && (
+            <>
+              <div className="rounded-lg border p-3">
+                IP/Device | Lot/Kit | Strength/Model | Exp. Date | Qty Dispensed | Returned | Balance
+                <div className="mt-1">Storage conditions (temp/log) | Chain of custody | Destroyed? date/by</div>
+              </div>
+              <div>Pharmacist/Designee (print/sign/date): ________________________________</div>
+              <div>Investigator (print/sign/date): ________________________________</div>
+            </>
+          )}
+
+          {inst.type === "notes" && (
+            <div className="rounded-lg border p-3">
+              Notes / Deviations / Clarifications:
+              <div className="mt-2">______________________________________________________________</div>
+              <div>______________________________________________________________</div>
+            </div>
+          )}
+
+          {inst.type === "nextAppointment" && (
+            <div className="rounded-lg border p-3">
+              Next visit date: ____-___-____  Window: ______  Time: ____:____
+              <div className="mt-1">Instructions provided: ________________________________________</div>
+              <div className="mt-1">Coordinator contact: _______________  Phone: _______________</div>
+            </div>
+          )}
+
+          {inst.type === "attachments" && (
+            <div className="rounded-lg border p-3">
+              Attachments / Images: record file names; file printouts behind this page.
+              <div className="mt-1">File/Report name(s): _________________________________________</div>
+            </div>
+          )}
+
+          {inst.type === "consent" && (
+            <div className="rounded-lg border p-3">
+              ICF Version/Date: __________ &nbsp;&nbsp; IRB: __________
+              <ul className="list-disc pl-5 mt-2 space-y-1">
+                <li>Private area used; identity verified</li>
+                <li>Provided IRB-approved ICF and time to review</li>
+                <li>Discussed purpose, procedures, risks/benefits, alternatives</li>
+                <li>Questions answered; no coercion/undue influence</li>
+                <li>Assessed comprehension (teach-back)</li>
+                <li>Signatures obtained before any procedures</li>
+              </ul>
+              <div className="mt-2">Signature Times (24-hr): Participant ____:____  LAR ____:____  POC ____:____</div>
+            </div>
+          )}
+
           {inst.type === "eligibility" && (
             <div className="rounded-lg border p-3">
               <div className="font-medium">Inclusion Criteria</div>
@@ -483,27 +579,6 @@ export default function SourceBuilderApp() {
               </ul>
             </div>
           )}
-          {inst.type === "screening" && (
-            <div className="rounded-lg border p-3">
-              <ul className="list-disc pl-5 space-y-1">
-                <li>Pre-consent procedures performed: None ☐  (If any) __________</li>
-                <li>Medical history obtained; updates documented</li>
-                <li>Physical exam performed; abnormal findings documented</li>
-                <li>Vitals (HR/BP/RR/Temp/SpO2/Wt/Ht)</li>
-                <li>Labs/ECG per protocol; collection times recorded</li>
-              </ul>
-            </div>
-          )}
-          {inst.type === "baseline" && (
-            <div className="rounded-lg border p-3">
-              <ul className="list-disc pl-5 space-y-1">
-                <li>Randomization performed?  Yes ☐  No ☐    Code: ______</li>
-                <li>Visit procedures completed per protocol</li>
-                <li>Study drug/device dispensed; lot/kit/qty/exp recorded</li>
-                <li>Instructions provided (dose, storage, diary)</li>
-              </ul>
-            </div>
-          )}
         </div>
       </div>
     );
@@ -511,25 +586,17 @@ export default function SourceBuilderApp() {
 
   return (
     <div className="min-h-screen bg-white text-slate-900">
-      {/* Header */}
       <header className="sticky top-0 z-20 bg-white/90 backdrop-blur border-b">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="font-semibold tracking-tight">Source Builder</div>
-          <div className="flex items-center gap-4">
-            <a
-              className="text-sm underline"
-              href="#"
-              onClick={(e) => { e.preventDefault(); window.print(); }}
-            >
-              Print / Save as PDF
-            </a>
-          </div>
+          <a className="text-sm underline" href="#" onClick={(e) => { e.preventDefault(); window.print(); }}>
+            Print / Save as PDF
+          </a>
         </div>
       </header>
 
-      {/* Main */}
       <main className="max-w-6xl mx-auto px-4 py-6 grid lg:grid-cols-2 gap-8">
-        {/* Left: Form */}
+        {/* Left: Header form + Add module */}
         <section className="space-y-4">
           <h1 className="text-2xl font-bold">Create Source</h1>
           <p className="text-sm text-slate-600">
@@ -539,7 +606,6 @@ export default function SourceBuilderApp() {
           <div className="grid sm:grid-cols-2 gap-3">
             {(
               [
-                ["protocol", "Protocol No"],
                 ["title", "Protocol Title"],
                 ["site", "Site No"],
                 ["pi", "PI (printed)"],
@@ -561,7 +627,6 @@ export default function SourceBuilderApp() {
             ))}
           </div>
 
-          {/* Add Module */}
           <div className="rounded-lg border p-3">
             <div className="text-sm text-slate-700 mb-2">Add module</div>
             <div className="flex gap-2">
@@ -576,41 +641,26 @@ export default function SourceBuilderApp() {
                   </option>
                 ))}
               </select>
-              <button
-                onClick={addModule}
-                className="rounded-lg bg-blue-600 text-white px-4 py-2"
-              >
+              <button onClick={addModule} className="rounded-lg bg-blue-600 text-white px-4 py-2">
                 Add
               </button>
             </div>
             <div className="text-xs text-slate-500 mt-2">
-              Tip: For triplicate BP or multiple ECGs, add the module and increase <strong>Repeat</strong>.
+              Tip: For triplicate BP or multiple ECGs, increase <strong>Repeat</strong>.
             </div>
           </div>
 
-          {/* Actions */}
           <div className="flex gap-3 pt-2">
-            <button
-              onClick={handleDownloadDocx}
-              className="rounded-lg bg-blue-600 text-white px-4 py-2"
-            >
+            <button onClick={handleDownloadDocx} className="rounded-lg bg-blue-600 text-white px-4 py-2">
               Download .docx
             </button>
-            <button
-              onClick={() => window.print()}
-              className="rounded-lg border px-4 py-2"
-            >
+            <button onClick={() => window.print()} className="rounded-lg border px-4 py-2">
               Print / Save as PDF
             </button>
           </div>
 
           {msg && (
-            <div
-              className={
-                "text-sm mt-2 " +
-                (msg.toLowerCase().includes("downloaded") ? "text-green-700" : "text-red-600")
-              }
-            >
+            <div className={"text-sm mt-2 " + (msg.toLowerCase().includes("downloaded") ? "text-green-700" : "text-red-600")}>
               {msg}
             </div>
           )}
@@ -619,7 +669,6 @@ export default function SourceBuilderApp() {
         {/* Right: Preview */}
         <section className="space-y-4">
           {HeaderPreview}
-          {/* Modules list */}
           <div className="grid gap-3">
             {mods.length === 0 ? (
               <div className="text-sm text-slate-500 border rounded-lg p-4">
