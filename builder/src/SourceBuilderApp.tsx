@@ -1,4 +1,5 @@
-﻿import { useMemo, useState } from "react";
+﻿import PrintDoc from "./components/PrintDoc";
+import { useMemo, useState } from "react";
 import {
   AlignmentType,
   Document,

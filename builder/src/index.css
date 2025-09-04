@@ -1,1 +1,106 @@
 @import "tailwindcss";
+
+.print-only { display: none; }
+
+@media print {
+  @page { size: Letter; margin: 0.5in; }
+  .no-print { display: none !important; }
+  .print-only { display: block !important; }
+  .pd-card, .pd-subcard, .pd-grid { break-inside: avoid; page-break-inside: avoid; }
+}
+
+/* ---------- Clean print doc look ---------- */
+.pd-root {
+  font: 11pt system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+  line-height: 1.45;
+  color: #111;
+}
+.pd-head { margin-bottom: 12px; }
+.pd-brand { font-size: 10pt; color: #555; }
+.pd-headgrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 16px;
+  font-size: 10pt;
+  margin-top: 6px;
+}
+.pd-muted { font-size: 9.5pt; color: #666; margin-top: 6px; }
+
+.pd-card {
+  border: 1px solid #999;
+  border-radius: 6px;
+  padding: 10px;
+  margin: 10px 0;
+}
+.pd-subcard {
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  padding: 8px;
+  margin-top: 6px;
+}
+.pd-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+.pd-section-title {
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  font-weight: 600;
+  font-size: 10pt;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #999;
+}
+.pd-right { font-size: 10pt; }
+.pd-pichip { display: flex; gap: 10px; align-items: center; font-size: 10pt; }
+.pd-box {
+  display: inline-block;
+  width: .9em;
+  height: .9em;
+  border: 1px solid #000;
+  margin: 0 .25em 0 .5em;
+  vertical-align: -0.12em;
+}
+
+.pd-line {
+  display: inline-block;
+  border-bottom: 1px solid #000;
+  min-width: 6rem;
+  vertical-align: -0.25em;
+}
+.w-sm { width: 8rem; }
+.w-md { width: 12rem; }
+.w-xl { width: 100%; }
+
+.pd-bullets { margin: 6px 0 0 18px; }
+.pd-bullets li { margin: 2px 0; }
+
+.pd-grid {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10pt;
+  margin-top: 6px;
+}
+.pd-grid th,
+.pd-grid td {
+  border: 1px solid #aaa;
+  text-align: left;
+  padding: 6px 8px;
+}
+
+.pd-note { color: #333; margin-bottom: 4px; }
+.pd-subtitle { margin-top: 6px; font-weight: 600; }
+
+.pd-boxarea { border: 1px solid #aaa; height: 3.5rem; margin-top: 4px; }
+.pd-spacer { height: .5rem; }
+
+.pd-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10pt;
+  color: #555;
+  margin-top: 12px;
+}
+
